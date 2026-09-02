@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- The whole point: a device that can advertise BLE beacons. -->
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
+    <!-- Runtime permissions (requested from the UI before starting the service):
+         BLUETOOTH_ADVERTISE (API 31+) gates beacon advertising, POST_NOTIFICATIONS
+         (API 33+) gates the foreground-service notification. BLUETOOTH_CONNECT is
+         not needed for advertise-only use yet, but is declared for the follow-on
+         work that inspects the adapter. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Legacy pre-API-31 Bluetooth permissions; ignored from API 31 on. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Foreground service plumbing (required since API 28 / typed since API 34).
+         "connectedDevice" is the foreground service type that covers BLE
+         advertising; there is no "bluetooth" type and no FOREGROUND_SERVICE_BLUETOOTH
+         permission — FOREGROUND_SERVICE_CONNECTED_DEVICE is the correct pairing.
+         Runtime prerequisite for this type: the BLUETOOTH_ADVERTISE grant above. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Batsignal">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".service.BeaconService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+
+</manifest>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bat-signal palette: warm yellow glyph on a night-black field. -->
+    <color name="batsignal_night">#101014</color>
+    <color name="batsignal_yellow">#FFC400</color>
+</resources>

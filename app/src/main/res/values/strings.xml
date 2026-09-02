@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">batsignal</string>
+
+    <string name="identity_field_label">Identity to broadcast</string>
+    <string name="identity_field_placeholder">handle, at:// URI, or DID</string>
+
+    <string name="button_start">Start</string>
+    <string name="button_stop">Stop</string>
+
+    <string name="status_idle">Idle</string>
+    <string name="status_broadcasting">Broadcasting: %1$s</string>
+    <string name="permission_denied">Bluetooth advertising permission is required to broadcast.</string>
+
+    <string name="notification_channel_name">Beacon</string>
+    <string name="notification_channel_description">Shown while the batsignal beacon is broadcasting.</string>
+    <string name="notification_title">batsignal</string>
+    <string name="notification_text">Broadcasting %1$s</string>
+    <string name="notification_text_blank">Broadcasting (no identity set)</string>
+    <string name="notification_stop">Stop</string>
+</resources>
