@@ -62,6 +62,20 @@ version-number-only error.
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Verifying on hardware
+
+Use a second device with [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-mobile):
+
+- The **legacy companion** shows up in any scanner: flags + service data under
+  `4040e298-8e40-40e2-988e-4040e2988e40` containing `batsignal` + `0x01`. Quick "is it
+  on" check.
+- The **extended identity frame** (service data = marker + the identity string as
+  UTF-8) only appears with extended scanning enabled — enable it in nRF Connect's
+  scanner settings. Standard/legacy scanners cannot see non-legacy frames at all.
+- Scanning from another Android app requires `ScanSettings.setLegacy(false)`; see
+  the receiver notes in
+  [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md).
+
 ## Docs
 
 - [`doc/abl/research.md`](doc/abl/research.md) — AltBeacon library evaluation; verdict
