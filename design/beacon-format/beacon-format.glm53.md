@@ -4,9 +4,9 @@ title: "batsignal beacon wire format"
 description: How an AT Protocol identity rides in a BLE extended advertisement — marker UUID, frames, and parameters.
 resource: https://github.com/rektide/batsignal/blob/main/design/beacon-format/beacon-format.glm53.md
 tags: [batsignal, ble, atproto, did, advertising]
-status: draft # awaiting UUID candidate confirmation (D vs A)
+status: stable # UUID candidate D confirmed by user 2026-09-02
 generated: { by: agent:opencode-glm53, at: 2026-09-02 }
-verified: { by: unverified }
+verified: { by: human:rektide, at: 2026-09-02 }
 stale_after: 2027-03-02
 sources:
   - id: abl-research
@@ -76,9 +76,10 @@ service UUID:
    byte string is still nothing but `@` and `☎` glyphs. Collision odds with real random
    v4 UUIDs are nil (a random v4 would have to literally be these glyph bytes).
 
-**Recommendation: D**, `4040e298-8e40-40e2-988e-4040e2988e40`, decodable in any UTF-8
-terminal as `@@☎@@☎@@☎@`. A remains the fallback if pure `@☎` rhythm matters more to
-you than the reserved-nibble cosmetics.
+**Chosen: D**, `4040e298-8e40-40e2-988e-4040e2988e40`, decodable in any UTF-8
+terminal as `@@☎@@☎@@☎@` (user-confirmed 2026-09-02). A remains documented as the
+considered fallback if pure `@☎` rhythm ever matters more than the reserved-nibble
+cosmetics.
 
 ## Frame layouts
 
@@ -144,9 +145,8 @@ AD structure: Service Data - 128-bit UUID (0x21)
 
 ## Open questions
 
-- None blocking implementation. UUID candidate D vs A is the one open user call
-  (cosmetic-reserved vs pure rhythm). TX power / interval are tunable knobs, not
-  decisions.
+- None. UUID candidate D confirmed by the user 2026-09-02. TX power / interval are
+  tunable knobs, not decisions.
 
 ## Cross-references
 
