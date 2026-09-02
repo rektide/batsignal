@@ -1,0 +1,14 @@
+# batsignal Android toolchain, pinned via mise.
+#
+# - java: Temurin 21 LTS (prefix pin tracks the latest 21.x LTS). Android
+#   Gradle Plugin 8.13 requires JDK 17+; 21 is the boring LTS choice and fully
+#   supported by both AGP and Gradle 8.14.
+# - gradle: only used to bootstrap the wrapper (`gradle wrapper`); day-to-day
+#   builds run via ./gradlew, which downloads the pinned distribution itself.
+#
+# The Android SDK is not managed by mise: it is system-installed at
+# /usr/lib/android-sdk (Debian layout) and pointed at by local.properties.
+# See README.md for the full dev setup.
+[tools]
+java = "temurin-21"
+gradle = "8.14.5"
