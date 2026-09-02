@@ -13,26 +13,38 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import io.github.rektide.batsignal.MainActivity
 import io.github.rektide.batsignal.R
+import io.github.rektide.batsignal.ble.BeaconAdvertiseState
+import io.github.rektide.batsignal.ble.BeaconAdvertiser
 
 /**
- * Foreground service that will host BLE beacon advertising of an AT Protocol
- * identity. Phase 1: it holds the identity string, shows a persistent
- * notification with a Stop action, and parks the future Bluetooth work behind
- * [startAdvertising] / [stopAdvertising].
+ * Foreground service hosting BLE beacon advertising of an AT Protocol
+ * identity. It owns a [BeaconAdvertiser] driving the two advertising sets
+ * (extended identity frame + legacy companion marker) and mirrors the real
+ * advertise state into both the persistent notification and
+ * [BeaconStatusHolder] for the UI — advertising / marker-only / failed with
+ * reason, never an assumed success.
  *
  * Manifest pairing: foregroundServiceType="connectedDevice" plus the
- * FOREGROUND_SERVICE_CONNECTED_DEVICE permission; BLUETOOTH_ADVERTISE is
- * requested at runtime by the UI before the service is started.
+ * FOREGROUND_SERVICE_CONNECTED_DEVICE permission; BLUETOOTH_ADVERTISE (and
+ * BLUETOOTH_CONNECT, for observing adapter state) are requested at runtime by
+ * the UI before the service is started.
  */
 class BeaconService : Service() {
 
-    private var identity: String = ""
+    private var advertiser: BeaconAdvertiser? = null
+
+    @Volatile
+    private var lastNotificationText: String? = null
+
+    @Volatile
+    private var destroyed = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        advertiser = BeaconAdvertiser(this) { state -> onAdvertiserState(state) }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,18 +57,18 @@ class BeaconService : Service() {
             }
 
             else -> {
-                identity = intent?.getStringExtra(EXTRA_IDENTITY).orEmpty()
+                val identity = intent?.getStringExtra(EXTRA_IDENTITY).orEmpty()
                 // connectedDevice is passed through ServiceCompat so API 29+
                 // startForeground(int, Notification, int) gets the type; below
                 // API 29 the type is ignored (the manifest declaration rules).
                 ServiceCompat.startForeground(
                     this,
                     NOTIFICATION_ID,
-                    buildNotification(identity),
+                    buildNotification(notificationText(BeaconAdvertiseState.Starting(identity))),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE,
                 )
                 Log.i(TAG, "foreground service up (identity=$identity)")
-                startAdvertising(identity)
+                advertiser?.start(identity)
             }
         }
         // Don't silently resurrect a killed broadcast whose intent extras
@@ -65,44 +77,64 @@ class BeaconService : Service() {
     }
 
     override fun onDestroy() {
-        stopAdvertising()
+        destroyed = true
+        advertiser?.release()
+        advertiser = null
+        BeaconStatusHolder.update(BeaconAdvertiseState.Stopped)
         super.onDestroy()
     }
 
     // ---------------------------------------------------------------------
-    // TODO: BLE advertising lands here. A parallel effort is evaluating
-    // AltBeacon vs. raw BluetoothLeAdvertiser.startAdvertisingSet with
-    // extended-length payloads; whichever wins, startAdvertising(identity)
-    // is where the advertiser gets spun up and stopAdvertising() tears it
-    // down. No Bluetooth is done yet.
+    // Advertising + state plumbing
     // ---------------------------------------------------------------------
 
-    private fun startAdvertising(identity: String) {
-        Log.i(TAG, "TODO startAdvertising(identity=$identity): no BLE yet")
+    /**
+     * Single sink for advertiser states (invoked on binder threads while the
+     * advertiser holds its lock): publish to the UI via [BeaconStatusHolder]
+     * and refresh the notification, but only when the text actually changed.
+     * Both touches are thread-safe; must not call back into the advertiser.
+     * Once destroyed, only the holder is updated — re-posting the
+     * notification mid-teardown could leave a stale non-foreground one.
+     */
+    private fun onAdvertiserState(state: BeaconAdvertiseState) {
+        BeaconStatusHolder.update(state)
+        if (destroyed) return
+        val text = notificationText(state)
+        if (text != lastNotificationText) {
+            lastNotificationText = text
+            getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text))
+        }
     }
 
     private fun stopAdvertising() {
-        Log.i(TAG, "TODO stopAdvertising(): no BLE yet")
+        advertiser?.stop()
     }
 
     // ---------------------------------------------------------------------
+    // Notification
+    // ---------------------------------------------------------------------
 
-    private fun buildNotification(identity: String): Notification {
-        val content = if (identity.isBlank()) {
-            getString(R.string.notification_text_blank)
-        } else {
-            getString(R.string.notification_text, identity)
+    private fun notificationText(state: BeaconAdvertiseState): String = when (state) {
+        BeaconAdvertiseState.Stopped -> getString(R.string.notification_text_stopped)
+        is BeaconAdvertiseState.Starting -> getString(R.string.notification_text_starting, state.identity)
+        is BeaconAdvertiseState.Running -> when {
+            state.extended && state.legacy -> getString(R.string.notification_text, state.identity)
+            state.legacy -> getString(R.string.notification_text_legacy_only, state.identity)
+            else -> getString(R.string.notification_text_extended_only, state.identity)
         }
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        is BeaconAdvertiseState.Failed -> getString(R.string.notification_text_failed, state.reason)
+    }
+
+    private fun buildNotification(contentText: String): Notification =
+        NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_batsignal_broadcast)
             .setContentTitle(getString(R.string.notification_title))
-            .setContentText(content)
+            .setContentText(contentText)
             .setContentIntent(activityPendingIntent())
             .addAction(0, getString(R.string.notification_stop), stopPendingIntent())
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .build()
-    }
 
     private fun activityPendingIntent(): PendingIntent = PendingIntent.getActivity(
         this,

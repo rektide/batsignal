@@ -7,10 +7,10 @@
         android:required="true" />
 
     <!-- Runtime permissions (requested from the UI before starting the service):
-         BLUETOOTH_ADVERTISE (API 31+) gates beacon advertising, POST_NOTIFICATIONS
-         (API 33+) gates the foreground-service notification. BLUETOOTH_CONNECT is
-         not needed for advertise-only use yet, but is declared for the follow-on
-         work that inspects the adapter. -->
+         BLUETOOTH_ADVERTISE (API 31+) gates the advertising sets, BLUETOOTH_CONNECT
+         (API 31+) gates receiving adapter state changes (stop on Bluetooth off,
+         resume on Bluetooth on). POST_NOTIFICATIONS (API 33+) gates the
+         foreground-service notification. -->
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 

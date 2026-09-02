@@ -9,13 +9,21 @@
     <string name="button_stop">Stop</string>
 
     <string name="status_idle">Idle</string>
+    <string name="status_starting">Starting: %1$s</string>
     <string name="status_broadcasting">Broadcasting: %1$s</string>
-    <string name="permission_denied">Bluetooth advertising permission is required to broadcast.</string>
+    <string name="status_broadcasting_legacy_only">Broadcasting marker only: %1$s</string>
+    <string name="status_broadcasting_extended_only">Broadcasting: %1$s (marker companion not sent)</string>
+    <string name="status_failed">Beacon failed: %1$s</string>
+    <string name="permission_denied">Bluetooth permissions are required to broadcast.</string>
 
     <string name="notification_channel_name">Beacon</string>
     <string name="notification_channel_description">Shown while the batsignal beacon is broadcasting.</string>
     <string name="notification_title">batsignal</string>
     <string name="notification_text">Broadcasting %1$s</string>
-    <string name="notification_text_blank">Broadcasting (no identity set)</string>
+    <string name="notification_text_starting">Starting %1$s…</string>
+    <string name="notification_text_legacy_only">Broadcasting %1$s (marker only; extended advertising unavailable)</string>
+    <string name="notification_text_extended_only">Broadcasting %1$s (marker companion not sent)</string>
+    <string name="notification_text_failed">Beacon stopped: %1$s</string>
+    <string name="notification_text_stopped">Stopped</string>
     <string name="notification_stop">Stop</string>
 </resources>

@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,29 +28,38 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import io.github.rektide.batsignal.R
+import io.github.rektide.batsignal.ble.BeaconAdvertiseState
 import io.github.rektide.batsignal.data.IdentityStore
 import io.github.rektide.batsignal.permissions.requiredRuntimePermissions
 import io.github.rektide.batsignal.service.BeaconService
+import io.github.rektide.batsignal.service.BeaconStatusHolder
 
 /**
  * The single phase-1 screen: pick an identity, start or stop the beacon
- * foreground service. Dull on purpose — real behavior accumulates behind
- * [BeaconService].
+ * foreground service. Dull on purpose — the status line shows the service's
+ * real advertise state (from [BeaconStatusHolder]), so it stops claiming
+ * "broadcasting" the moment the service says otherwise.
  */
 @Composable
 fun BatsignalScreen() {
     val context = LocalContext.current
     val store = remember { IdentityStore(context) }
     var identity by remember { mutableStateOf(store.load()) }
-    var broadcasting by remember { mutableStateOf(false) }
     var notice by remember { mutableStateOf<String?>(null) }
+    val status by BeaconStatusHolder.status.collectAsState()
 
     fun startBeacon() {
         val intent = Intent(context, BeaconService::class.java)
             .setAction(BeaconService.ACTION_START)
             .putExtra(BeaconService.EXTRA_IDENTITY, identity.trim())
         ContextCompat.startForegroundService(context, intent)
-        broadcasting = true
+        notice = null
+    }
+
+    fun stopBeacon() {
+        context.startService(
+            Intent(context, BeaconService::class.java).setAction(BeaconService.ACTION_STOP),
+        )
         notice = null
     }
 
@@ -60,8 +70,10 @@ fun BatsignalScreen() {
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
-        val advertiseGranted = grants[Manifest.permission.BLUETOOTH_ADVERTISE] ?: true
-        if (advertiseGranted) {
+        val blockingDenied = requiredRuntimePermissions()
+            .filter { it != Manifest.permission.POST_NOTIFICATIONS }
+            .any { grants[it] == false }
+        if (!blockingDenied) {
             startBeacon()
         } else {
             notice = context.getString(R.string.permission_denied)
@@ -106,10 +118,7 @@ fun BatsignalScreen() {
                         Text(stringResource(R.string.button_start))
                     }
                     Button(
-                        onClick = {
-                            context.stopService(Intent(context, BeaconService::class.java))
-                            broadcasting = false
-                        },
+                        onClick = { stopBeacon() },
                     ) {
                         Text(stringResource(R.string.button_stop))
                     }
@@ -118,8 +127,22 @@ fun BatsignalScreen() {
                 Text(
                     text = when {
                         notice != null -> notice!!
-                        broadcasting -> stringResource(R.string.status_broadcasting, identity.trim())
-                        else -> stringResource(R.string.status_idle)
+                        else -> when (val s = status) {
+                            BeaconAdvertiseState.Stopped -> stringResource(R.string.status_idle)
+                            is BeaconAdvertiseState.Starting -> stringResource(R.string.status_starting, s.identity)
+                            is BeaconAdvertiseState.Running -> {
+                                val base = when {
+                                    s.extended && s.legacy ->
+                                        stringResource(R.string.status_broadcasting, s.identity)
+                                    s.legacy ->
+                                        stringResource(R.string.status_broadcasting_legacy_only, s.identity)
+                                    else ->
+                                        stringResource(R.string.status_broadcasting_extended_only, s.identity)
+                                }
+                                s.note?.let { "$base\n$it" } ?: base
+                            }
+                            is BeaconAdvertiseState.Failed -> stringResource(R.string.status_failed, s.reason)
+                        }
                     },
                 )
             }
