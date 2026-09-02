@@ -7,6 +7,9 @@ identity — a handle, `at://` URI, or `did:plc:` / `did:web:` DID — over
 Bluetooth LE beacons, so nearby devices can discover who you are without any
 network in the middle.
 
+The wire format is specified in [`PROTOCOL.md`](PROTOCOL.md) — implementers and
+scanner authors should read that.
+
 **Current scope (phase 1):** a single screen where you type the identity to
 broadcast, and Start/Stop controls that drive a foreground service
 ([`BeaconService`](app/src/main/java/io/github/rektide/batsignal/service/BeaconService.kt)).
@@ -73,12 +76,13 @@ Use a second device with [nRF Connect](https://www.nordicsemi.com/Products/Devel
   UTF-8) only appears with extended scanning enabled — enable it in nRF Connect's
   scanner settings. Standard/legacy scanners cannot see non-legacy frames at all.
 - Scanning from another Android app requires `ScanSettings.setLegacy(false)`; see
-  the receiver notes in
-  [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md).
+  the receiver notes in [`PROTOCOL.md`](PROTOCOL.md).
 
 ## Docs
 
+- [`PROTOCOL.md`](PROTOCOL.md) — the normative wire-format spec: marker UUID,
+  extended identity frame, legacy companion frame, test vectors, receiver notes.
+- [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md) —
+  the format decision record: candidates, rationale, reserved-space analysis.
 - [`doc/abl/research.md`](doc/abl/research.md) — AltBeacon library evaluation; verdict
   is raw `AdvertisingSet` in an app-owned foreground service.
-- [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md) —
-  the beacon wire format: marker UUID, extended + legacy companion frames, parameters.

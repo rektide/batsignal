@@ -22,6 +22,10 @@ sources:
 
 # batsignal beacon wire format
 
+> **Normative spec:** these decisions are now specified for implementers in
+> [`PROTOCOL.md`](/PROTOCOL.md) — that document wins on any disagreement. This
+> record keeps the rationale and the candidates considered.
+
 ## Situation
 
 batsignal phase 1: an Android app where the user types an AT Protocol identity and a

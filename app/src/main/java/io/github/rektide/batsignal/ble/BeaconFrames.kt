@@ -4,7 +4,7 @@ import java.util.UUID
 
 /**
  * batsignal wire-format assembly — the pure, Android-free half of the
- * advertiser, per `design/beacon-format/beacon-format.glm53.md`. Kept free of
+ * advertiser, per [`PROTOCOL.md`](../../../../../PROTOCOL.md). Kept free of
  * `android.*` imports so the byte layout is unit-testable on the JVM.
  *
  * Two Service Data payloads ride under the same marker UUID:

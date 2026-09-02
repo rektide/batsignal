@@ -41,7 +41,7 @@ import androidx.core.content.ContextCompat
  * [onState] is invoked under the advertiser's lock, usually on a binder
  * thread. It must be cheap and must not call back into this class.
  *
- * Wire format: `design/beacon-format/beacon-format.glm53.md`.
+ * Wire format: [`PROTOCOL.md`](../../../../../PROTOCOL.md).
  */
 class BeaconAdvertiser(
     context: Context,
