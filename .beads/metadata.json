@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "batsignal",
+  "project_id": "32f08853-086c-497c-ae55-51119687fbf6"
+}
