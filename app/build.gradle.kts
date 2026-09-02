@@ -56,4 +56,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     debugImplementation(libs.androidx.ui.tooling)
+
+    testImplementation(libs.junit)
 }
