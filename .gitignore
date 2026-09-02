@@ -3,3 +3,13 @@
 .dolt/
 *.db
 .beads-credential-key
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+.kotlin/
+.cxx/
+captures/
+*.iml
+.idea/
