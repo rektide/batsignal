@@ -56,3 +56,10 @@ version-number-only error.
 ```sh
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## Docs
+
+- [`doc/abl/research.md`](doc/abl/research.md) — AltBeacon library evaluation; verdict
+  is raw `AdvertisingSet` in an app-owned foreground service.
+- [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md) —
+  the beacon wire format: marker UUID, extended + legacy companion frames, parameters.
