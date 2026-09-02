@@ -8,13 +8,18 @@ Bluetooth LE beacons, so nearby devices can discover who you are without any
 network in the middle.
 
 **Current scope (phase 1):** a single screen where you type the identity to
-broadcast, and Start/Stop controls that drive a stub foreground service
+broadcast, and Start/Stop controls that drive a foreground service
 ([`BeaconService`](app/src/main/java/io/github/rektide/batsignal/service/BeaconService.kt)).
-The service holds the identity, shows a persistent notification with a Stop
-action, and exposes the `startAdvertising()` / `stopAdvertising()` TODO hooks
-where real BLE advertising will land (a parallel effort is evaluating AltBeacon
-vs. raw `AdvertisingSet` with extended payloads). Sign-in and resolution of
-handles to DIDs come later.
+The service owns a real BLE advertiser
+([`ble/BeaconAdvertiser.kt`](app/src/main/java/io/github/rektide/batsignal/ble/BeaconAdvertiser.kt))
+that runs two advertising sets — the extended identity frame and a legacy
+companion marker — per the
+[wire format](design/beacon-format/beacon-format.glm53.md). The notification
+and the on-screen status reflect the actual advertise state (advertising /
+marker-only / failed with reason), including degradation and
+Bluetooth-off/resume handling. Sign-in and resolution of handles to DIDs come
+later; on-hardware verification (e.g. nRF Connect with extended scanning
+enabled) is still to do.
 
 The manifest plumbing is already banked: runtime requests for
 `POST_NOTIFICATIONS` (Android 13+) and `BLUETOOTH_ADVERTISE` (Android 12+) are
