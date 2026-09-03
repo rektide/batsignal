@@ -24,9 +24,11 @@ class IdentityStore(context: Context) {
         prefs.edit().putBoolean(KEY_LEGACY_COMPANION, enabled).apply()
     }
 
-    private companion object {
+    companion object {
+        /** Shared with [AdvertiseConfigStore] — one prefs file per app. */
         const val PREFS_NAME = "batsignal"
-        const val KEY_IDENTITY = "identity"
-        const val KEY_LEGACY_COMPANION = "legacy_companion"
+
+        private const val KEY_IDENTITY = "identity"
+        private const val KEY_LEGACY_COMPANION = "legacy_companion"
     }
 }
