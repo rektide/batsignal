@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keys mirror AdvertiseConfigStore.KEY_* — the service filters its prefs
+     listener on exactly those, and AdvertiseConfigStore.load() reads them. -->
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:key="advertising"
+        app:title="@string/config_group_advertising">
+
+        <ListPreference
+            app:defaultValue="medium"
+            app:entries="@array/config_tx_power_entries"
+            app:entryValues="@array/config_tx_power_values"
+            app:key="tx_power"
+            app:title="@string/config_tx_power_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="2000"
+            app:entries="@array/config_interval_entries"
+            app:entryValues="@array/config_interval_values"
+            app:key="interval_mode"
+            app:title="@string/config_interval_title" />
+
+        <EditTextPreference
+            app:defaultValue="1000"
+            app:dialogMessage="@string/config_custom_interval_dialog_message"
+            app:dialogTitle="@string/config_custom_interval_dialog_title"
+            app:key="interval_custom_millis"
+            app:title="@string/config_custom_interval_title" />
+
+        <ListPreference
+            app:defaultValue="le_1m"
+            app:entries="@array/config_phy_entries"
+            app:entryValues="@array/config_phy_values"
+            app:key="secondary_phy"
+            app:title="@string/config_phy_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="include_tx_power"
+            app:summary="@string/config_include_tx_power_summary"
+            app:title="@string/config_include_tx_power_title" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -30,4 +30,65 @@
     <string name="notification_text_failed">Beacon stopped: %1$s</string>
     <string name="notification_text_stopped">Stopped</string>
     <string name="notification_stop">Stop</string>
+
+    <!-- Main screen overflow menu -->
+    <string name="menu_overflow">More options</string>
+    <string name="menu_config">Config</string>
+
+    <!-- Config screen -->
+    <string name="config_title">Config</string>
+    <string name="config_group_advertising">Advertising parameters</string>
+
+    <string name="config_tx_power_title">TX power</string>
+    <string-array name="config_tx_power_entries">
+        <item>Ultra low</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Ultra high</item>
+    </string-array>
+    <string-array name="config_tx_power_values">
+        <item>ultra_low</item>
+        <item>low</item>
+        <item>medium</item>
+        <item>high</item>
+        <item>ultra_high</item>
+    </string-array>
+
+    <string name="config_interval_title">Advertise interval</string>
+    <string-array name="config_interval_entries">
+        <item>500 ms</item>
+        <item>2 s</item>
+        <item>10 s</item>
+        <item>@string/config_interval_custom_entry</item>
+    </string-array>
+    <string-array name="config_interval_values">
+        <item>500</item>
+        <item>2000</item>
+        <item>10000</item>
+        <item>custom</item>
+    </string-array>
+    <string name="config_interval_custom_entry">Custom…</string>
+    <string name="config_interval_custom_summary">Custom (%1$d ms)</string>
+
+    <string name="config_custom_interval_title">Custom interval</string>
+    <string name="config_custom_interval_dialog_title">Custom advertise interval</string>
+    <string name="config_custom_interval_dialog_message">Milliseconds between advertisements; values below 100 are raised to 100.</string>
+    <string name="config_custom_interval_summary">%1$d ms</string>
+    <string name="config_custom_interval_hint">Used when the interval is set to Custom…; milliseconds, minimum 100</string>
+
+    <string name="config_phy_title">Secondary PHY</string>
+    <string-array name="config_phy_entries">
+        <item>Standard (LE 1M)</item>
+        <item>Fast (LE 2M)</item>
+        <item>Long range (LE Coded)</item>
+    </string-array>
+    <string-array name="config_phy_values">
+        <item>le_1m</item>
+        <item>le_2m</item>
+        <item>le_coded</item>
+    </string-array>
+
+    <string name="config_include_tx_power_title">Include TX power header</string>
+    <string name="config_include_tx_power_summary">Extended frame only: TX power in the extended header (ACAD)</string>
 </resources>

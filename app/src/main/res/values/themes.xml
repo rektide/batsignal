@@ -2,4 +2,11 @@
 <resources>
     <!-- Compose paints everything; this is just the window chrome. -->
     <style name="Theme.Batsignal" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- PreferenceFragmentCompat needs an AppCompat theme plus an explicit
+         preferenceTheme overlay (the framework Material theme above defines
+         neither). DayNight keeps the Config screen legible in dark mode. -->
+    <style name="Theme.Batsignal.Config" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+    </style>
 </resources>

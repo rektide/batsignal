@@ -8,6 +8,12 @@ coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.11.0"
 composeBom = "2025.11.01"
+# preference 1.2.1 is the newest stable (2023, well under the compileSdk 36
+# ceiling; it folds in the -ktx extensions). appcompat 1.7.1 is the last
+# pre-2026 line — deliberately held back from the 2026 stables that want
+# AGP 9.1 + compileSdk 37, per the pinned androidx line above.
+appcompat = "1.7.1"
+preference = "1.2.1"
 junit = "4.13.2"
 
 [libraries]
@@ -20,6 +26,11 @@ androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+# Icons.Default.MoreVert lives here; newer material3 no longer exposes
+# material-icons-core transitively.
+androidx-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-preference = { group = "androidx.preference", name = "preference", version.ref = "preference" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 
 [plugins]

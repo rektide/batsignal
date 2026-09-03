@@ -44,6 +44,14 @@
             </intent-filter>
         </activity>
 
+        <!-- AppCompat-hosted preferences screen; the framework Material
+             theme of MainActivity can't host PreferenceFragmentCompat. -->
+        <activity
+            android:name=".config.ConfigActivity"
+            android:exported="false"
+            android:label="@string/config_title"
+            android:theme="@style/Theme.Batsignal.Config" />
+
         <service
             android:name=".service.BeaconService"
             android:exported="false"
