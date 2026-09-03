@@ -10,7 +10,7 @@ verified: { by: unverified }
 stale_after: 2027-03-03
 sources:
   - id: abl-research
-    resource: /doc/abl/research.md
+    resource: doc/abl/research.md
     title: AltBeacon evaluation — transport capacity findings
 ---
 
@@ -20,7 +20,7 @@ A batsignal transmitter broadcasts an [AT Protocol](https://atproto.com) identit
 a `did:plc:` / `did:web:` DID, an `at://` URI, or a bare handle — over Bluetooth LE
 advertising, so nearby devices can discover who is present with no network in the
 middle. This document is the normative wire format; if the
-[decision record](/design/beacon-format/beacon-format.glm53.md) disagrees, **this
+[decision record](design/beacon-format/beacon-format.glm53.md) disagrees, **this
 spec wins**.
 
 The key words MUST, MUST NOT, SHOULD, and MAY are to be interpreted as described in
@@ -200,12 +200,12 @@ characters, same length.)
 
 ## Cross-references
 
-- [`design/beacon-format/beacon-format.glm53.md`](/design/beacon-format/beacon-format.glm53.md) —
+- [`design/beacon-format/beacon-format.glm53.md`](design/beacon-format/beacon-format.glm53.md) —
   decision record for the choices above.
-- [`doc/abl/research.md`](/doc/abl/research.md) — why raw `AdvertisingSet` and not a
+- [`doc/abl/research.md`](doc/abl/research.md) — why raw `AdvertisingSet` and not a
   beacon library; capacity tables; scanner visibility caveats.
 - Reference implementation:
-  [`app/src/main/java/io/github/rektide/batsignal/ble/BeaconFrames.kt`](/app/src/main/java/io/github/rektide/batsignal/ble/BeaconFrames.kt)
+  [`app/src/main/java/io/github/rektide/batsignal/ble/BeaconFrames.kt`](app/src/main/java/io/github/rektide/batsignal/ble/BeaconFrames.kt)
   (byte assembly) with tests in
-  [`app/src/test/java/io/github/rektide/batsignal/ble/BeaconFramesTest.kt`](/app/src/test/java/io/github/rektide/batsignal/ble/BeaconFramesTest.kt).
-- [`README.md`](/README.md) — app usage, dev setup, on-hardware verification.
+  [`app/src/test/java/io/github/rektide/batsignal/ble/BeaconFramesTest.kt`](app/src/test/java/io/github/rektide/batsignal/ble/BeaconFramesTest.kt).
+- [`README.md`](README.md) — app usage, dev setup, on-hardware verification.

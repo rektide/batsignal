@@ -10,7 +10,7 @@ verified: { by: human:rektide, at: 2026-09-02 }
 stale_after: 2027-03-02
 sources:
   - id: abl-research
-    resource: /doc/abl/research.md
+    resource: doc/abl/research.md
     title: AltBeacon evaluation — capacity tables and AdvertisingSet findings
   - id: rfc9562
     resource: https://www.rfc-editor.org/rfc/rfc9562.html
@@ -23,14 +23,14 @@ sources:
 # batsignal beacon wire format
 
 > **Normative spec:** these decisions are now specified for implementers in
-> [`PROTOCOL.md`](/PROTOCOL.md) — that document wins on any disagreement. This
+> [`PROTOCOL.md`](../../PROTOCOL.md) — that document wins on any disagreement. This
 > record keeps the rationale and the candidates considered.
 
 ## Situation
 
 batsignal phase 1: an Android app where the user types an AT Protocol identity and a
 foreground service advertises it over BLE. The AltBeacon evaluation
-([`doc/abl/research.md`](/doc/abl/research.md)) settled the transport: **raw
+([`doc/abl/research.md`](../../doc/abl/research.md)) settled the transport: **raw
 `AdvertisingSet` (`setLegacyMode(false)`) in an app-owned foreground service** — no
 library. ABL is legacy-`startAdvertising`-only, and a raw `did:plc:` string is 32 bytes,
 one over the entire 31-byte legacy budget before any header. Eddystone is dead and its
@@ -154,8 +154,8 @@ AD structure: Service Data - 128-bit UUID (0x21)
 
 ## Cross-references
 
-- [`doc/abl/research.md`](/doc/abl/research.md) — why raw `AdvertisingSet`, capacity
+- [`doc/abl/research.md`](../../doc/abl/research.md) — why raw `AdvertisingSet`, capacity
   tables, and the legacy-scanner-invisibility caveat that motivated the companion frame.
-- [`/README.md`](/README.md) — phase-1 scope and dev setup.
+- [`README.md`](../../README.md) — phase-1 scope and dev setup.
 - beads: `batsignal-payload-format` (this decision), `batsignal-advertiser-service`
   (implementation), `batsignal-handle-resolution` (what text goes in the frame later).

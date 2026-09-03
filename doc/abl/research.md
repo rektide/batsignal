@@ -171,7 +171,7 @@ Adding any real frame header (AD length/type byte pair, 16- or 128-bit service U
 ## References
 
 Follow-up: the wire-format decision this research unblocked lives in
-[`design/beacon-format/beacon-format.glm53.md`](/design/beacon-format/beacon-format.glm53.md).
+[`design/beacon-format/beacon-format.glm53.md`](../../design/beacon-format/beacon-format.glm53.md).
 
 - Archive checkout: `~/archive/altbeacon/android-beacon-library` @ `aca69f9` (2.21.1+16, 2026-01-16)
   - `lib/src/main/java/org/altbeacon/beacon/BeaconTransmitter.java` — whole file; esp. lines 6–9 (imports), 234 (legacy startAdvertising), 237–239 (exception swallow), 245–259 (stop), 269–295 (support check)
