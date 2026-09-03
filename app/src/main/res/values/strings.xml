@@ -4,9 +4,13 @@
 
     <string name="identity_field_label">Identity to broadcast</string>
     <string name="identity_field_placeholder">handle, at:// URI, or DID</string>
+    <string name="identity_pending_change">Changes apply when the beacon restarts</string>
 
-    <string name="button_start">Start</string>
-    <string name="button_stop">Stop</string>
+    <string name="toggle_beacon">Beacon</string>
+    <string name="toggle_beacon_subtitle">Broadcast this identity over Bluetooth LE</string>
+    <string name="toggle_legacy">Legacy marker</string>
+    <string name="toggle_legacy_subtitle">31-byte companion visible to every scanner</string>
+    <string name="notice_identity_needed">Enter an identity to broadcast first.</string>
 
     <string name="status_idle">Idle</string>
     <string name="status_starting">Starting: %1$s</string>

@@ -58,6 +58,7 @@ class BeaconService : Service() {
 
             else -> {
                 val identity = intent?.getStringExtra(EXTRA_IDENTITY).orEmpty()
+                val legacyCompanion = intent?.getBooleanExtra(EXTRA_LEGACY_COMPANION, true) ?: true
                 // connectedDevice is passed through ServiceCompat so API 29+
                 // startForeground(int, Notification, int) gets the type; below
                 // API 29 the type is ignored (the manifest declaration rules).
@@ -67,8 +68,8 @@ class BeaconService : Service() {
                     buildNotification(notificationText(BeaconAdvertiseState.Starting(identity))),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE,
                 )
-                Log.i(TAG, "foreground service up (identity=$identity)")
-                advertiser?.start(identity)
+                Log.i(TAG, "foreground service up (identity=$identity, legacyCompanion=$legacyCompanion)")
+                advertiser?.start(identity, legacyCompanion)
             }
         }
         // Don't silently resurrect a killed broadcast whose intent extras
@@ -169,5 +170,6 @@ class BeaconService : Service() {
         const val ACTION_START = "io.github.rektide.batsignal.action.START"
         const val ACTION_STOP = "io.github.rektide.batsignal.action.STOP"
         const val EXTRA_IDENTITY = "io.github.rektide.batsignal.extra.IDENTITY"
+        const val EXTRA_LEGACY_COMPANION = "io.github.rektide.batsignal.extra.LEGACY_COMPANION"
     }
 }

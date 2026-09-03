@@ -36,7 +36,9 @@ A transmitter:
 
 - MUST advertise the **extended identity frame** (§3) whenever the controller supports
   LE extended advertising, and SHOULD also advertise the **legacy companion frame**
-  (§4) so that legacy-only scanners can detect a batsignal's presence.
+  (§4) so that legacy-only scanners can detect a batsignal's presence. A deployment
+  may omit the companion deliberately (e.g. a user preference); it is never required
+  for protocol correctness, but legacy-only scanners will then see nothing.
 - MUST use the marker UUID bytes of §2 exactly in both frames.
 - MUST NOT place identity text in the legacy companion frame.
 

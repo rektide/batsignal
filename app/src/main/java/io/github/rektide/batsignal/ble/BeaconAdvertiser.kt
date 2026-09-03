@@ -61,6 +61,14 @@ class BeaconAdvertiser(
     /** Identity we should be broadcasting; null means stopped by intent. */
     private var desiredIdentity: String? = null
 
+    /**
+     * Whether the user wants the legacy companion set on air. Persisted by the
+     * caller; survives adapter-off resumes. The UI never allows legacy-only
+     * intent, but devices without extended-advertising support can still end
+     * up legacy-only (see [beginAdvertising]).
+     */
+    private var desiredLegacyCompanion = true
+
     /** Start callbacks still outstanding for the current attempt. */
     private var pendingSets = 0
     private var extendedRunning = false
@@ -96,8 +104,11 @@ class BeaconAdvertiser(
         )
     }
 
-    /** Begin (or restart) advertising [identity]. */
-    fun start(identity: String) {
+    /**
+     * Begin (or restart) advertising [identity], with the legacy companion
+     * frame only when [includeLegacyCompanion] is true.
+     */
+    fun start(identity: String, includeLegacyCompanion: Boolean = true) {
         synchronized(lock) {
             check(!released) { "BeaconAdvertiser released" }
             if (identity.isBlank()) {
@@ -107,6 +118,7 @@ class BeaconAdvertiser(
                 return
             }
             desiredIdentity = identity
+            desiredLegacyCompanion = includeLegacyCompanion
             beginAdvertising(identity)
         }
     }
@@ -181,7 +193,9 @@ class BeaconAdvertiser(
                 setFailures[SetKind.EXTENDED] = reason
                 Log.w(TAG, reason)
             }
-            startSet(SetKind.LEGACY_COMPANION, leAdvertiser, legacyParameters(), legacyData(marker))
+            if (desiredLegacyCompanion) {
+                startSet(SetKind.LEGACY_COMPANION, leAdvertiser, legacyParameters(), legacyData(marker))
+            }
         } catch (e: SecurityException) {
             teardown()
             return fail(identity, "missing Bluetooth permission: ${e.message}")

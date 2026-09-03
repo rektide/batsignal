@@ -11,13 +11,15 @@ The wire format is specified in [`PROTOCOL.md`](PROTOCOL.md) — implementers an
 scanner authors should read that.
 
 **Current scope (phase 1):** a single screen where you type the identity to
-broadcast, and Start/Stop controls that drive a foreground service
+broadcast, and two switches: a master **Beacon** on/off, and a **Legacy marker**
+toggle (persisted; disabled while the beacon is off — legacy is a companion,
+never a lone broadcast) that controls whether the 31-byte companion rides along.
+They drive a foreground service
 ([`BeaconService`](app/src/main/java/io/github/rektide/batsignal/service/BeaconService.kt)).
 The service owns a real BLE advertiser
 ([`ble/BeaconAdvertiser.kt`](app/src/main/java/io/github/rektide/batsignal/ble/BeaconAdvertiser.kt))
-that runs two advertising sets — the extended identity frame and a legacy
-companion marker — per the
-[wire format](design/beacon-format/beacon-format.glm53.md). The notification
+that runs the advertising sets — the extended identity frame and the optional
+legacy companion — per [`PROTOCOL.md`](PROTOCOL.md). The notification
 and the on-screen status reflect the actual advertise state (advertising /
 marker-only / failed with reason), including degradation and
 Bluetooth-off/resume handling. Sign-in and resolution of handles to DIDs come

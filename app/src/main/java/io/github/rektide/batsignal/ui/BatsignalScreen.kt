@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -35,23 +36,40 @@ import io.github.rektide.batsignal.service.BeaconService
 import io.github.rektide.batsignal.service.BeaconStatusHolder
 
 /**
- * The single phase-1 screen: pick an identity, start or stop the beacon
- * foreground service. Dull on purpose — the status line shows the service's
- * real advertise state (from [BeaconStatusHolder]), so it stops claiming
- * "broadcasting" the moment the service says otherwise.
+ * The single phase-1 screen: pick an identity, then two switches.
+ *
+ *  * **Beacon** — master on/off for the foreground service. Its checked state
+ *    is derived from [BeaconStatusHolder] (any state but `Stopped` means the
+ *    service is alive and intends to broadcast, including a `Failed` state
+ *    that will auto-resume when Bluetooth comes back), so it never claims an
+ *    on-air state the service hasn't reported.
+ *  * **Legacy marker** — whether the 31-byte companion rides along. The
+ *    preference persists and is retained while the beacon is off, but the
+ *    switch is disabled then: legacy is a companion, never a beacon of its
+ *    own. Toggling it while broadcasting restarts the advertising sets with
+ *    the new setting (and, as a side effect, applies pending identity edits).
+ *
+ * The identity field persists per keystroke; while broadcasting, a supporting
+ * hint appears if the text no longer matches what is on air. Dull on purpose.
  */
 @Composable
 fun BatsignalScreen() {
     val context = LocalContext.current
     val store = remember { IdentityStore(context) }
     var identity by remember { mutableStateOf(store.load()) }
+    var legacyCompanion by remember { mutableStateOf(store.loadLegacyCompanion()) }
     var notice by remember { mutableStateOf<String?>(null) }
     val status by BeaconStatusHolder.status.collectAsState()
+
+    // Any non-Stopped state means the service is alive and wants to broadcast
+    // (Starting/Running, or Failed with an auto-resume pending).
+    val beaconOn = status != BeaconAdvertiseState.Stopped
 
     fun startBeacon() {
         val intent = Intent(context, BeaconService::class.java)
             .setAction(BeaconService.ACTION_START)
             .putExtra(BeaconService.EXTRA_IDENTITY, identity.trim())
+            .putExtra(BeaconService.EXTRA_LEGACY_COMPANION, legacyCompanion)
         ContextCompat.startForegroundService(context, intent)
         notice = null
     }
@@ -80,6 +98,33 @@ fun BatsignalScreen() {
         }
     }
 
+    fun toggleBeacon(on: Boolean) {
+        when {
+            !on -> stopBeacon()
+            identity.isBlank() -> notice = context.getString(R.string.notice_identity_needed)
+            else -> {
+                val missing = requiredRuntimePermissions().filter {
+                    ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+                }
+                if (missing.isEmpty()) {
+                    startBeacon()
+                } else {
+                    permissionLauncher.launch(missing.toTypedArray())
+                }
+            }
+        }
+    }
+
+    // The identity currently on air (or being started), if any.
+    val broadcastingIdentity = when (val s = status) {
+        is BeaconAdvertiseState.Starting -> s.identity
+        is BeaconAdvertiseState.Running -> s.identity
+        is BeaconAdvertiseState.Failed -> s.identity
+        BeaconAdvertiseState.Stopped -> null
+    }
+    val pendingIdentityChange =
+        beaconOn && broadcastingIdentity != null && identity.isNotBlank() && identity.trim() != broadcastingIdentity
+
     MaterialTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -97,31 +142,60 @@ fun BatsignalScreen() {
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.identity_field_label)) },
                     placeholder = { Text(stringResource(R.string.identity_field_placeholder)) },
+                    supportingText = {
+                        if (pendingIdentityChange) {
+                            Text(stringResource(R.string.identity_pending_change))
+                        }
+                    },
                     singleLine = true,
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = {
-                            val missing = requiredRuntimePermissions().filter {
-                                ContextCompat.checkSelfPermission(context, it) !=
-                                    PackageManager.PERMISSION_GRANTED
-                            }
-                            if (missing.isEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Text(stringResource(R.string.toggle_beacon))
+                        Text(
+                            stringResource(R.string.toggle_beacon_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = beaconOn,
+                        onCheckedChange = { on -> toggleBeacon(on) },
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Text(stringResource(R.string.toggle_legacy))
+                        Text(
+                            stringResource(R.string.toggle_legacy_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Switch(
+                        checked = legacyCompanion,
+                        // Disabled while the beacon is off — the preference is
+                        // retained but cannot be exercised: legacy never
+                        // broadcasts alone.
+                        enabled = beaconOn,
+                        onCheckedChange = { enabled ->
+                            legacyCompanion = enabled
+                            store.saveLegacyCompanion(enabled)
+                            if (beaconOn) {
+                                // Re-START applies the companion setting
+                                // immediately (and any pending identity edit).
                                 startBeacon()
-                            } else {
-                                permissionLauncher.launch(missing.toTypedArray())
                             }
                         },
-                        enabled = identity.isNotBlank(),
-                    ) {
-                        Text(stringResource(R.string.button_start))
-                    }
-                    Button(
-                        onClick = { stopBeacon() },
-                    ) {
-                        Text(stringResource(R.string.button_stop))
-                    }
+                    )
                 }
 
                 Text(
