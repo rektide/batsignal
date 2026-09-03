@@ -9,9 +9,6 @@ generated: { by: agent:opencode-glm53, at: 2026-09-03 }
 verified: { by: unverified }
 stale_after: 2027-03-03
 sources:
-  - id: format-decision
-    resource: /design/beacon-format/beacon-format.glm53.md
-    title: Wire-format decision record (candidates, rationale)
   - id: abl-research
     resource: /doc/abl/research.md
     title: AltBeacon evaluation — transport capacity findings
@@ -22,10 +19,9 @@ sources:
 A batsignal transmitter broadcasts an [AT Protocol](https://atproto.com) identity —
 a `did:plc:` / `did:web:` DID, an `at://` URI, or a bare handle — over Bluetooth LE
 advertising, so nearby devices can discover who is present with no network in the
-middle. This document is the normative wire format. Design rationale and the
-alternatives considered live in
-[`design/beacon-format/beacon-format.glm53.md`](/design/beacon-format/beacon-format.glm53.md);
-if this spec and that document disagree, **this spec wins**.
+middle. This document is the normative wire format; if the
+[decision record](/design/beacon-format/beacon-format.glm53.md) disagrees, **this
+spec wins**.
 
 The key words MUST, MUST NOT, SHOULD, and MAY are to be interpreted as described in
 RFC 2119.
@@ -104,7 +100,8 @@ Identity payload rules:
   1650 B). The usable identity budget is **max − 18** (0x21 header + marker UUID).
   A transmitter MUST NOT start the extended set if the identity exceeds this budget.
 
-Recommended transmit parameters (SHOULD; all tunable):
+Recommended transmit parameters (SHOULD; all tunable — a transmitter MAY expose
+them as user configuration without affecting conformance):
 
 | Parameter | v1 value |
 |---|---|
@@ -204,7 +201,7 @@ characters, same length.)
 ## Cross-references
 
 - [`design/beacon-format/beacon-format.glm53.md`](/design/beacon-format/beacon-format.glm53.md) —
-  decision record: why plain UTF-8, why Service Data, the UUID candidate analysis.
+  decision record for the choices above.
 - [`doc/abl/research.md`](/doc/abl/research.md) — why raw `AdvertisingSet` and not a
   beacon library; capacity tables; scanner visibility caveats.
 - Reference implementation:
