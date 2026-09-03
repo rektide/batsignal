@@ -15,6 +15,8 @@ import android.content.IntentFilter
 import android.os.ParcelUuid
 import android.util.Log
 import androidx.core.content.ContextCompat
+import io.github.rektide.batsignal.ble.AdvertiseConfig.SecondaryPhy
+import io.github.rektide.batsignal.ble.AdvertiseConfig.TxPower
 
 /**
  * Owns the two batsignal advertising sets and folds their asynchronous
@@ -69,6 +71,12 @@ class BeaconAdvertiser(
      */
     private var desiredLegacyCompanion = true
 
+    /**
+     * Advertising parameters the user wants (PROTOCOL.md §3 "all tunable");
+     * supplied on every [start] and reused on adapter-off resumes.
+     */
+    private var desiredConfig: AdvertiseConfig = AdvertiseConfig()
+
     /** Start callbacks still outstanding for the current attempt. */
     private var pendingSets = 0
     private var extendedRunning = false
@@ -106,9 +114,14 @@ class BeaconAdvertiser(
 
     /**
      * Begin (or restart) advertising [identity], with the legacy companion
-     * frame only when [includeLegacyCompanion] is true.
+     * frame only when [includeLegacyCompanion] is true, using [config] for
+     * the tunable advertising parameters.
      */
-    fun start(identity: String, includeLegacyCompanion: Boolean = true) {
+    fun start(
+        identity: String,
+        includeLegacyCompanion: Boolean = true,
+        config: AdvertiseConfig = AdvertiseConfig(),
+    ) {
         synchronized(lock) {
             check(!released) { "BeaconAdvertiser released" }
             if (identity.isBlank()) {
@@ -119,6 +132,7 @@ class BeaconAdvertiser(
             }
             desiredIdentity = identity
             desiredLegacyCompanion = includeLegacyCompanion
+            desiredConfig = config
             beginAdvertising(identity)
         }
     }
@@ -187,14 +201,14 @@ class BeaconAdvertiser(
 
             val marker = ParcelUuid(BeaconFrames.markerUuid())
             if (adapter.isLeExtendedAdvertisingSupported) {
-                startSet(SetKind.EXTENDED, leAdvertiser, extendedParameters(), identityData(marker, identity))
+                startSet(SetKind.EXTENDED, leAdvertiser, extendedParameters(desiredConfig), identityData(marker, identity))
             } else {
                 val reason = "extended advertising not supported on this device"
                 setFailures[SetKind.EXTENDED] = reason
                 Log.w(TAG, reason)
             }
             if (desiredLegacyCompanion) {
-                startSet(SetKind.LEGACY_COMPANION, leAdvertiser, legacyParameters(), legacyData(marker))
+                startSet(SetKind.LEGACY_COMPANION, leAdvertiser, legacyParameters(desiredConfig), legacyData(marker))
             }
         } catch (e: SecurityException) {
             teardown()
@@ -359,29 +373,47 @@ class BeaconAdvertiser(
     }
 
     // -------------------------------------------------------------------
-    // Frame parameters and data (boring defaults from the format doc)
+    // Frame parameters and data (user config per PROTOCOL.md §3 "all
+    // tunable"; the symbolic-to-constant mapping happens only here)
     // -------------------------------------------------------------------
 
-    private fun extendedParameters(): AdvertisingSetParameters =
+    /** TX power and interval apply to both sets; see [AdvertiseConfig]. */
+    private fun extendedParameters(config: AdvertiseConfig): AdvertisingSetParameters =
         AdvertisingSetParameters.Builder()
             .setLegacyMode(false)
             .setConnectable(false)
             .setScannable(false)
             .setPrimaryPhy(BluetoothDevice.PHY_LE_1M)
-            .setSecondaryPhy(BluetoothDevice.PHY_LE_1M)
-            .setTxPowerLevel(AdvertisingSetParameters.TX_POWER_MEDIUM)
-            .setInterval(AdvertisingSetParameters.INTERVAL_HIGH) // ~1000 ms
-            .setIncludeTxPower(true) // TX power in the extended header
+            .setSecondaryPhy(secondaryPhyConstant(config.secondaryPhy))
+            .setTxPowerLevel(txPowerConstant(config.txPower))
+            .setInterval(config.intervalMillis)
+            .setIncludeTxPower(config.includeTxPower) // TX power in the extended header (ACAD)
             .build()
 
-    private fun legacyParameters(): AdvertisingSetParameters =
+    /** Legacy mode ignores PHY and the TX power header; power and interval still apply. */
+    private fun legacyParameters(config: AdvertiseConfig): AdvertisingSetParameters =
         AdvertisingSetParameters.Builder()
             .setLegacyMode(true) // 31-byte BT 4.x frame; PHY settings are ignored
             .setConnectable(false)
             .setScannable(false)
-            .setTxPowerLevel(AdvertisingSetParameters.TX_POWER_MEDIUM)
-            .setInterval(AdvertisingSetParameters.INTERVAL_HIGH)
+            .setTxPowerLevel(txPowerConstant(config.txPower))
+            .setInterval(config.intervalMillis)
             .build()
+
+    private fun txPowerConstant(power: TxPower): Int = when (power) {
+        TxPower.ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
+        TxPower.LOW -> AdvertisingSetParameters.TX_POWER_LOW
+        TxPower.MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
+        TxPower.HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
+        // The platform renamed TX_POWER_ULTRA_HIGH to TX_POWER_MAX (android-36).
+        TxPower.ULTRA_HIGH -> AdvertisingSetParameters.TX_POWER_MAX
+    }
+
+    private fun secondaryPhyConstant(phy: SecondaryPhy): Int = when (phy) {
+        SecondaryPhy.LE_1M -> BluetoothDevice.PHY_LE_1M
+        SecondaryPhy.LE_2M -> BluetoothDevice.PHY_LE_2M
+        SecondaryPhy.LE_CODED -> BluetoothDevice.PHY_LE_CODED
+    }
 
     private fun identityData(marker: ParcelUuid, identity: String): AdvertiseData =
         AdvertiseData.Builder()
