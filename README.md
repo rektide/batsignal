@@ -26,6 +26,16 @@ Bluetooth-off/resume handling. Sign-in and resolution of handles to DIDs come
 later; on-hardware verification (e.g. nRF Connect with extended scanning
 enabled) is still to do.
 
+An overflow menu on the main screen opens a **Config** screen
+([`config/ConfigActivity.kt`](app/src/main/java/io/github/rektide/batsignal/config/ConfigActivity.kt))
+with the tunable advertising parameters `PROTOCOL.md` §3 permits: TX power,
+advertise interval (500 ms / 2 s / 10 s presets or a custom millisecond value,
+floored at 100 ms), secondary PHY, and whether the TX power header rides the
+extended frame. TX power and interval apply to both frames, PHY and header to
+the extended one only. Changes are picked up on the next beacon start — or,
+while broadcasting, automatically once you stop tweaking (one restart ~20 s
+after the last change).
+
 The manifest plumbing is already banked: runtime requests for
 `POST_NOTIFICATIONS` (Android 13+) and `BLUETOOTH_ADVERTISE` (Android 12+) are
 asked before the service starts, and the service is declared with the

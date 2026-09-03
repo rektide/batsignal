@@ -11,11 +11,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import io.github.rektide.batsignal.R
 import io.github.rektide.batsignal.ble.BeaconAdvertiseState
+import io.github.rektide.batsignal.config.ConfigActivity
 import io.github.rektide.batsignal.data.IdentityStore
 import io.github.rektide.batsignal.permissions.requiredRuntimePermissions
 import io.github.rektide.batsignal.service.BeaconService
@@ -51,7 +60,11 @@ import io.github.rektide.batsignal.service.BeaconStatusHolder
  *
  * The identity field persists per keystroke; while broadcasting, a supporting
  * hint appears if the text no longer matches what is on air. Dull on purpose.
+ *
+ * A top bar overflow menu leads to the Config screen ([ConfigActivity]) for
+ * the tunable advertising parameters.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BatsignalScreen() {
     val context = LocalContext.current
@@ -126,10 +139,14 @@ fun BatsignalScreen() {
         beaconOn && broadcastingIdentity != null && identity.isNotBlank() && identity.trim() != broadcastingIdentity
 
     MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = { BatsignalTopBar() },
+        ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(innerPadding)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -222,4 +239,39 @@ fun BatsignalScreen() {
             }
         }
     }
+}
+
+/**
+ * App bar whose only overflow item opens the Config screen. TopAppBar is
+ * still an experimental material3 API, hence the OptIn.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BatsignalTopBar() {
+    val context = LocalContext.current
+    var menuOpen by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = { Text(stringResource(R.string.app_name)) },
+        actions = {
+            IconButton(onClick = { menuOpen = true }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.menu_overflow),
+                )
+            }
+            DropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_config)) },
+                    onClick = {
+                        menuOpen = false
+                        context.startActivity(Intent(context, ConfigActivity::class.java))
+                    },
+                )
+            }
+        },
+    )
 }
